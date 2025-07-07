@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -17,8 +18,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	filepath, pattern, instance_to_find := os.Args[1], os.Args[2], os.Args[3]
-	target_instance_number, err := strconv.ParseInt(instance_to_find, 10, 16)
+	filepath, pattern, desired_match_index_as_str := os.Args[1], os.Args[2], os.Args[3]
+	target_instance_number, err := strconv.Atoi(desired_match_index_as_str)
 	if target_instance_number == 0 {
 		fmt.Fprint(os.Stderr, "Can't find the 0th occurence of a string.")
 		os.Exit(1)
@@ -44,10 +45,20 @@ func main() {
 			}
 		}
 	}
-
-	if len(instances) == 0 || int(target_instance_number) > len(instances) {
+	// The int -> float -> math.Abs -> int cast feels horrific but also whatever.
+	if len(instances) == 0 || int(math.Abs(float64(target_instance_number))) > len(instances) {
+		fmt.Fprintf(os.Stderr, "Did not find occurence number: %d of %s", target_instance_number, pattern)
 		os.Exit(1)
 	}
-	fmt.Fprintf(os.Stdout, "%d\n", instances[target_instance_number-1])
-	os.Exit(0)
+	if target_instance_number > 0 {
+		fmt.Fprintf(os.Stdout, "%d\n", instances[target_instance_number-1])
+		os.Exit(0)
+	}
+
+	if target_instance_number < 0 {
+		fmt.Fprintf(os.Stdout, "%d\n", instances[len(instances)+target_instance_number])
+		os.Exit(0)
+	}
+
+	os.Exit(1)
 }
